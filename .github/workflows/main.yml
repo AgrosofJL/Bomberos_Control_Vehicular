@@ -1,1 +1,46 @@
 
+name: Compilar iOS (IPA / Payload)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Configurar Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Instalar dependencias
+        run: flutter pub get
+
+      - name: Compilar Release iOS (sin firma)
+        run: flutter build ios --release --no-codesign
+
+      - name: Empaquetar Payload .ipa
+        run: |
+          cd build/ios/iphoneos
+          mkdir Payload
+          cp -r Runner.app Payload/
+          zip -r ControlVehicular_iOS.ipa Payload
+
+      - name: Subir artefacto para descargar
+        uses: actions/upload-artifact@v4
+        with:
+          name: ControlVehicular_iOS
+          path: build/ios/iphoneos/ControlVehicular_iOS.ipa
