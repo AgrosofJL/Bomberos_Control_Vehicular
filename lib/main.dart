@@ -1,5 +1,8 @@
 // ESTO LO MODIFIQUE
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:math';
@@ -12,10 +15,18 @@ import 'loguer.dart';
 import 'menu.dart'; 
 
 void main() async {
-  await initializeDateFormatting('es_ES', null);
+  // 1. Siempre primero
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Conexión inicial a Supabase (Mantenida intacta)
+
+  // 2. Inicializar motor SQLite Web si corre en navegador
+  if (kIsWeb) {
+    databaseFactory = databaseFactoryFfiWeb;
+  }
+
+  // 3. Formato de fechas
+  await initializeDateFormatting('es_ES', null);
+
+  // 4. Conexión a Supabase
   await Supabase.initialize(
     url: 'https://axmwslbcchqpcglxdzip.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4bXdzbGJjY2hxcGNnbHhkemlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyOTIwNTksImV4cCI6MjA5Njg2ODA1OX0.m6m88jGRGwsb81glmyvmVkDM3cfROdVZ4EmgobPy5Xo',
