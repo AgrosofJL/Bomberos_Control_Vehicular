@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-web:
     runs-on: ubuntu-latest
@@ -23,7 +26,7 @@ jobs:
         run: flutter pub get
 
       - name: Compilar Web PWA
-        run: flutter build web --release
+        run: flutter build web --release --base-href "/Bomberos_Control_Vehicular/"
 
       - name: Publicar en GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
