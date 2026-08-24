@@ -20,8 +20,9 @@ void main() async {
 
   // 2. Inicializar motor SQLite Web si corre en navegador
   if (kIsWeb) {
-    databaseFactory = databaseFactoryFfiWeb;
-  }
+  // Inicialización estándar para entorno Web
+  databaseFactory = createDatabaseFactoryFfiWeb();
+}
 
   // 3. Formato de fechas
   await initializeDateFormatting('es_ES', null);
@@ -34,6 +35,8 @@ void main() async {
 
   runApp(const MyApp());
 }
+
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
