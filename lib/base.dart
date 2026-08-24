@@ -1,3 +1,5 @@
+// ESTO LO MODIFIQUE
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -17,8 +19,16 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    // Buscamos la ruta interna del dispositivo para guardar la base de datos
-    String path = join(await getDatabasesPath(), 'checklist_bomberos.db');
+    String path;
+
+    if (kIsWeb) {
+      // En Web (WASM / IndexedDB) se pasa únicamente el identificador del archivo
+      path = 'checklist_bomberos.db';
+    } else {
+      // En Móvil / Desktop se concatena la ruta interna de almacenamiento
+      final databasesPath = await getDatabasesPath();
+      path = join(databasesPath, 'checklist_bomberos.db');
+    }
     
     return await openDatabase(
       path,
@@ -29,7 +39,7 @@ class DatabaseHelper {
 
   // --- ACA ES LO NUEVO: Estructura espejo exacta de Supabase ---
   Future<void> _onCreate(Database db, int version) async {
-    // 1. Tabla Usuarios (Adaptada con soporte para tu LogueoPage)
+    // 1. Tabla Usuarios
     await db.execute('''
       CREATE TABLE usuarios (
         id INTEGER PRIMARY KEY,
@@ -41,26 +51,29 @@ class DatabaseHelper {
         estado TEXT
       )
     ''');
-await db.execute('''
-    CREATE TABLE maquinaria (
-      id INTEGER PRIMARY KEY,
-      interno INTEGER,
-      marca_modelo TEXT,
-      dominio_patente TEXT,
-      numero_motor TEXT,
-      numero_chasis TEXT,
-      tipo_combustible TEXT,
-      sistema_electrico_bateria TEXT,
-      medida_neumaticos TEXT,
-      presion_psi INTEGER,
-      km_hs_actual REAL,
-      fecha_adquisicion TEXT,
-      observaciones TEXT,
-      tipo TEXT,
-      estado TEXT
-    )
-  ''');
-    // 2. Tabla Personal (Mapeo completo sin quitar ninguna columna)
+
+    // 2. Tabla Maquinaria
+    await db.execute('''
+      CREATE TABLE maquinaria (
+        id INTEGER PRIMARY KEY,
+        interno INTEGER,
+        marca_modelo TEXT,
+        dominio_patente TEXT,
+        numero_motor TEXT,
+        numero_chasis TEXT,
+        tipo_combustible TEXT,
+        sistema_electrico_bateria TEXT,
+        medida_neumaticos TEXT,
+        presion_psi INTEGER,
+        km_hs_actual REAL,
+        fecha_adquisicion TEXT,
+        observaciones TEXT,
+        tipo TEXT,
+        estado TEXT
+      )
+    ''');
+
+    // 3. Tabla Personal
     await db.execute('''
       CREATE TABLE personal (
         id INTEGER PRIMARY KEY,
@@ -87,7 +100,7 @@ await db.execute('''
       )
     ''');
 
-    // 3. Tabla Ítems de Chequeo
+    // 4. Tabla Ítems de Chequeo
     await db.execute('''
       CREATE TABLE items_chequeo (
         item INTEGER,
@@ -97,7 +110,7 @@ await db.execute('''
       )
     ''');
 
-    // 4. Tabla Chequeos Vehicular (Llave primaria compuesta id + reg_local)
+    // 5. Tabla Chequeos Vehicular
     await db.execute('''
       CREATE TABLE chequeos_vehicular (
         id TEXT,
@@ -123,7 +136,7 @@ await db.execute('''
         verifico TEXT,
         fecha_vto TEXT,
         visual_map TEXT,
-        observaciones TEX,
+        observaciones TEXT,
         reg_local TEXT
       )
     ''');
@@ -131,10 +144,9 @@ await db.execute('''
     debugPrint("✅ Base de datos local inicializada con todas las tablas espejo.");
   }
 
-  // --- ESTO LO MODIFIQUE: Lógica reglamentaria para cumplir con Max(registro)+1 ---
+  // --- Lógica para Max(registro)+1 ---
   Future<int> obtenerSiguienteIdChequeo() async {
     final database = await db;
-    // Buscamos el ID máximo guardado localmente para autoincrementar de forma limpia
     final List<Map<String, dynamic>> resultado = await database.rawQuery(
       'SELECT MAX(CAST(id AS INTEGER)) as max_id FROM chequeos_vehicular'
     );
