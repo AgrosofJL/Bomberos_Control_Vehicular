@@ -1,5 +1,4 @@
-
-name: Compilar iOS (IPA / Payload)
+name: Compilar Web (Acceso Safari Directo)
 
 on:
   push:
@@ -7,18 +6,12 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-ios:
-    runs-on: macos-latest
+  build-web:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Descargar repositorio
         uses: actions/checkout@v4
-
-      - name: Configurar Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
 
       - name: Configurar Flutter
         uses: subosito/flutter-action@v2
@@ -29,18 +22,11 @@ jobs:
       - name: Instalar dependencias
         run: flutter pub get
 
-      - name: Compilar Release iOS (sin firma)
-        run: flutter build ios --release --no-codesign
+      - name: Compilar Web PWA
+        run: flutter build web --release
 
-      - name: Empaquetar Payload .ipa
-        run: |
-          cd build/ios/iphoneos
-          mkdir Payload
-          cp -r Runner.app Payload/
-          zip -r ControlVehicular_iOS.ipa Payload
-
-      - name: Subir artefacto para descargar
-        uses: actions/upload-artifact@v4
+      - name: Publicar en GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          name: ControlVehicular_iOS
-          path: build/ios/iphoneos/ControlVehicular_iOS.ipa
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
