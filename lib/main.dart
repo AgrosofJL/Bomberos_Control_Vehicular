@@ -18,11 +18,10 @@ void main() async {
   // 1. Siempre primero
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 2. Inicializar motor SQLite Web si corre en navegador
+  // 2. Inicializar motor SQLite Web sin Web Worker (100% compatible con subrutas GitHub Pages)
   if (kIsWeb) {
-  // Inicialización estándar para entorno Web
-  databaseFactory = createDatabaseFactoryFfiWeb();
-}
+    databaseFactory = databaseFactoryFfiWebNoWebWorker;
+  }
 
   // 3. Formato de fechas
   await initializeDateFormatting('es_ES', null);
@@ -35,8 +34,6 @@ void main() async {
 
   runApp(const MyApp());
 }
-
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -72,24 +69,18 @@ class _CheckAuthPageState extends State<CheckAuthPage> {
     _evaluarPreferenciaDeSesion();
   }
 
-
   Future<void> _evaluarPreferenciaDeSesion() async {
-    // Abrimos la instancia del almacenamiento local
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    
-    // Leemos la bandera booleana de login
     bool tieneSesionActiva = prefs.getBool('isLoggedIn') ?? false;
 
     if (!mounted) return;
 
     if (tieneSesionActiva) {
-      // Si la preferencia es verdadera, entra directo al menú sin escalas
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const MenuPage()),
       );
     } else {
-      // Si es falso o nulo, lo frena en el Logueo
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const LogueoPage()),
@@ -103,7 +94,7 @@ class _CheckAuthPageState extends State<CheckAuthPage> {
       backgroundColor: Color(0xFFF4F6F9), // Estética Apple Soft Light
       body: Center(
         child: CircularProgressIndicator(
-          color: Color(0xFFFF5A36), // Tu naranja de bomberos
+          color: Color(0xFFFF5A36), // Naranja bomberos
           strokeWidth: 3,
         ),
       ),
