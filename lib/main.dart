@@ -13,12 +13,14 @@ import 'menu.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Inicialización de SQLite para Web
   if (kIsWeb) {
-    databaseFactory = createDatabaseFactoryFfiWeb();
+    try {
+      databaseFactory = databaseFactoryFfiWebNoWebWorker;
+    } catch (e) {
+      debugPrint("Aviso SQLite Web: $e");
+    }
   }
 
-  // Inicialización Supabase
   try {
     await Supabase.initialize(
       url: 'https://axmwslbcchqpcglxdzip.supabase.co',
@@ -59,7 +61,9 @@ class _CheckAuthPageState extends State<CheckAuthPage> {
   @override
   void initState() {
     super.initState();
-    _evaluarPreferenciaDeSesion();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _evaluarPreferenciaDeSesion();
+    });
   }
 
   Future<void> _evaluarPreferenciaDeSesion() async {
@@ -81,6 +85,7 @@ class _CheckAuthPageState extends State<CheckAuthPage> {
         );
       }
     } catch (e) {
+      debugPrint("Error leyendo SharedPreferences: $e");
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
