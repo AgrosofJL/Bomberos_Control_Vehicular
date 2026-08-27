@@ -5,10 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'dart:math';
-import 'dart:convert';
 import 'package:intl/date_symbol_data_local.dart'; 
-// ACA ES LO NUEVO: Importación nativa de almacenamiento local
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'loguer.dart'; 
@@ -18,13 +15,13 @@ void main() async {
   // 1. Siempre primero
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 2. Inicializar motor SQLite Web sin Web Worker (100% compatible con subrutas GitHub Pages)
+  // 2. Inicializar motor SQLite Web sin Web Worker
   if (kIsWeb) {
     databaseFactory = databaseFactoryFfiWebNoWebWorker;
   }
 
-  // 3. Formato de fechas
-  await initializeDateFormatting('es_ES', null);
+  // 3. Formato de fechas (Sin pasar null como segundo argumento para evitar el error de 'init' en JS)
+  await initializeDateFormatting('es_ES');
 
   // 4. Conexión a Supabase
   await Supabase.initialize(
@@ -52,9 +49,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// =============================================================================
-// ACA ES LO NUEVO: Pantalla de ruteo controlada 100% por SharedPreferences
-// =============================================================================
 class CheckAuthPage extends StatefulWidget {
   const CheckAuthPage({super.key});
 
@@ -91,10 +85,10 @@ class _CheckAuthPageState extends State<CheckAuthPage> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: Color(0xFFF4F6F9), // Estética Apple Soft Light
+      backgroundColor: Color(0xFFF4F6F9),
       body: Center(
         child: CircularProgressIndicator(
-          color: Color(0xFFFF5A36), // Naranja bomberos
+          color: Color(0xFFFF5A36),
           strokeWidth: 3,
         ),
       ),
