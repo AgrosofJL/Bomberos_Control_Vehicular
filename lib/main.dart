@@ -13,19 +13,19 @@ import 'menu.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1. Configurar SQLite Web
+  // Inicialización de SQLite para Web
   if (kIsWeb) {
-    databaseFactory = databaseFactoryFfiWebNoWebWorker;
+    databaseFactory = createDatabaseFactoryFfiWeb();
   }
 
-  // 2. Inicializar Supabase de forma segura para Web
+  // Inicialización Supabase
   try {
     await Supabase.initialize(
       url: 'https://axmwslbcchqpcglxdzip.supabase.co',
       anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF4bXdzbGJjY2hxcGNnbHhkemlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyOTIwNTksImV4cCI6MjA5Njg2ODA1OX0.m6m88jGRGwsb81glmyvmVkDM3cfROdVZ4EmgobPy5Xo',
     );
   } catch (e) {
-    debugPrint("Aviso inicialización Supabase: $e");
+    debugPrint("Aviso Supabase: $e");
   }
 
   runApp(const MyApp());
